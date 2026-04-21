@@ -88,7 +88,12 @@ def build_ffmpeg_command(
         "-map", "0:v:0",
         "-map", "1:a:0",
 
-        "-c:v", "h264_v4l2m2m",
+        # ========================================================
+        # SUPER-TEZ SOFTWARE ENCODER (CPU qotmaydi, kechikish 0 bo'ladi)
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-tune", "zerolatency",
+        # ========================================================
         
         "-b:v", "1800k",
         "-g", str(FPS * SEGMENT_TIME),

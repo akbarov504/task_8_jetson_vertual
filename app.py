@@ -9,10 +9,10 @@ from datetime import datetime, timedelta
 from config import LOCAL_PATH, VIDEO_SEGMENT_LEN
 from db import init_db, insert_video, video_exists
 
-OUT_VIDEO_DEVICE = "/dev/v4l/by-path/platform-xhci-hcd.0.auto-usb-0:1.3:1.0-video-index0"
+OUT_VIDEO_DEVICE = "4"
 OUT_AUDIO_DEVICE = "hw:Camera_1,0"
 
-IN_VIDEO_DEVICE = "/dev/v4l/by-path/platform-xhci-hcd.10.auto-usb-0:1:1.0-video-index0"
+IN_VIDEO_DEVICE = "0"
 IN_AUDIO_DEVICE = "hw:Camera,0"
 
 OUT_VIRTUAL_VIDEO_DEVICE = "/dev/video40"

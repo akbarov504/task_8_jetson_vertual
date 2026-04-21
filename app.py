@@ -95,7 +95,7 @@ def build_ffmpeg_command(
         "-bufsize", "3600k",
         
         "-r", str(FPS),
-        "-fps_mode", "cfr",
+        "-vsync", "1",
         
         "-force_key_frames", f"expr:gte(t,n_forced*{SEGMENT_TIME})",
 

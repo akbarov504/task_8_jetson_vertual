@@ -88,7 +88,7 @@ def build_ffmpeg_command(
         "-map", "0:v:0",
         "-map", "1:a:0",
 
-        "-c:v", "h264_nvv4l2m2m",
+        "-c:v", "h264_v4l2m2m",
         
         "-b:v", "1800k",
         "-g", str(FPS * SEGMENT_TIME),

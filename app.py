@@ -9,10 +9,10 @@ from datetime import datetime, timedelta
 from config import LOCAL_PATH, VIDEO_SEGMENT_LEN
 from db import init_db, insert_video, video_exists
 
-OUT_VIDEO_DEVICE = "/dev/v4l/by-path/platform-3610000.usb-usb-0:1:1.0-video-index0"
+OUT_VIDEO_DEVICE = "/dev/v4l/by-path/platform-3610000.usb-usb-0:2.4:1.0-video-index0"
 OUT_AUDIO_DEVICE = "hw:Camera_1,0"
 
-IN_VIDEO_DEVICE = "/dev/v4l/by-path/platform-3610000.usb-usb-0:2.4:1.0-video-index0"
+IN_VIDEO_DEVICE = "/dev/v4l/by-path/platform-3610000.usb-usb-0:1:1.0-video-index0"
 IN_AUDIO_DEVICE = "hw:Camera,0"
 
 OUT_VIRTUAL_VIDEO_DEVICE = "/dev/video40"
@@ -61,13 +61,14 @@ def build_ffmpeg_command(
         "-loglevel", "warning",
 
         "-fflags", "+genpts",
-        "-probesize", "5M",
-        "-analyzeduration", "5M",
+        "-probesize", "2M",
+        "-analyzeduration", "2M",
 
         "-thread_queue_size", "4096",
         "-f", "v4l2",
         "-input_format", "mjpeg",
-        "-framerate", str(FPS),
+    
+        "-framerate", "30",
         "-video_size", f"{WIDTH}x{HEIGHT}",
         
         "-use_wallclock_as_timestamps", "1",
@@ -87,7 +88,8 @@ def build_ffmpeg_command(
         "-map", "0:v:0",
         "-map", "1:a:0",
 
-        "-c:v", "libx264",
+        "-c:v", "h264_nvv4l2m2m",
+        
         "-b:v", "1800k",
         "-g", str(FPS * SEGMENT_TIME),
         "-keyint_min", str(FPS * SEGMENT_TIME),

@@ -66,7 +66,7 @@ def build_ffmpeg_command(
 
         "-thread_queue_size", "1024",
         "-f", "v4l2",
-        # 1-MUHIM: USB qotmasligi uchun MJPEG ishlatamiz
+
         "-input_format", "mjpeg",
         "-framerate", "30",
         "-video_size", f"{WIDTH}x{HEIGHT}",
@@ -88,7 +88,6 @@ def build_ffmpeg_command(
             f"[0:v]split=2[v_main][v_virtual];"
             f"[v_virtual]fps={VIRTUAL_FPS},"
             f"scale={VIRTUAL_WIDTH}:{VIRTUAL_HEIGHT}:flags=fast_bilinear,"
-            # 2-MUHIM: V4L2 virtual port qabul qilishi uchun YUV420P format!
             f"format=yuv420p[vout]"
         ),
     ]
@@ -132,7 +131,6 @@ def build_ffmpeg_command(
         cmd += [
             "-map", "[vout]",
             "-an",
-            # 3-MUHIM: Virtual port uchun aniq razmer (Invalid Argument xatosi uchun)
             "-video_size", f"{VIRTUAL_WIDTH}x{VIRTUAL_HEIGHT}",
             "-pix_fmt", "yuv420p",
             "-f", "v4l2",
@@ -167,7 +165,8 @@ def terminate_process(proc, name):
 def parse_segment_times_from_filename(file_name: str):
     """
     Format:
-      OUT_2026-04-09_13-10-11.mp4  -> 13-10-10 ga yaxlitlanadi!
+      OUT_2026-04-09_13-10-11.mp4  -> 13-10-10 ga yaxlitlanadi
+      OUT_2026-04-09_13-10-59.mp4  -> 13-11-00 ga yaxlitlanadi! (Tashlab ketilmaydi)
     """
     base_name        = os.path.basename(file_name)
     name_without_ext = os.path.splitext(base_name)[0]
@@ -180,7 +179,9 @@ def parse_segment_times_from_filename(file_name: str):
     try:
         actual_dt = datetime.strptime(dt_part, "%Y-%m-%d_%H-%M-%S")
         actual_ts = actual_dt.timestamp()
-        rounded_ts = (int(actual_ts) // SEGMENT_TIME) * SEGMENT_TIME
+
+        rounded_ts = round(actual_ts / SEGMENT_TIME) * SEGMENT_TIME
+        
         slot_dt = datetime.fromtimestamp(rounded_ts)
 
         segment_key = slot_dt.strftime("%Y-%m-%d_%H-%M-%S")
@@ -210,6 +211,15 @@ def is_file_stable(file_path: str, stable_seconds: int = FILE_STABLE_SECONDS) ->
 
     size2 = os.path.getsize(file_path)
     return size1 == size2 and size2 > 0
+
+def reset_virtual_ports():
+    print("[INFO] Virtual portlar avtomatik tozalanmoqda (Reset)...")
+    os.system("sudo rmmod v4l2loopback > /dev/null 2>&1")
+    time.sleep(1)
+
+    os.system("sudo modprobe v4l2loopback devices=2 video_nr=40,41 exclusive_caps=1 max_buffers=2 > /dev/null 2>&1")
+    time.sleep(1)
+    print("[INFO] Virtual portlar tayyor!")
 
 def scan_and_insert_segments():
     print("[INFO] Segment DB watcher ishga tushdi")
@@ -349,6 +359,7 @@ def stop_all(signum=None, frame=None):
     sys.exit(0)
 
 def main():
+    reset_virtual_ports()
     init_db()
 
     signal.signal(signal.SIGINT, stop_all)

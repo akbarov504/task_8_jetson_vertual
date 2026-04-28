@@ -60,21 +60,20 @@ def build_ffmpeg_command(
         "-hide_banner",
         "-loglevel", "warning",
 
-        "-fflags", "nobuffer",
-        "-flags", "low_delay",
-        
+        "-fflags", "+genpts",
         "-probesize", "2M",
         "-analyzeduration", "2M",
 
-        "-thread_queue_size", "4096",
+        "-thread_queue_size", "1024",
         "-f", "v4l2",
-        "-input_format", "yuyv422",
-        "-framerate", str(FPS),
+        # 1-MUHIM: USB qotmasligi uchun MJPEG ishlatamiz
+        "-input_format", "mjpeg",
+        "-framerate", "30",
         "-video_size", f"{WIDTH}x{HEIGHT}",
         "-use_wallclock_as_timestamps", "1",
         "-i", video_device,
 
-        "-thread_queue_size", "4096",
+        "-thread_queue_size", "1024",
         "-f", "alsa",
         "-channels", channels,
         "-sample_rate", sample_rate,
@@ -89,7 +88,8 @@ def build_ffmpeg_command(
             f"[0:v]split=2[v_main][v_virtual];"
             f"[v_virtual]fps={VIRTUAL_FPS},"
             f"scale={VIRTUAL_WIDTH}:{VIRTUAL_HEIGHT}:flags=fast_bilinear,"
-            f"format=yuyv422[vout]"
+            # 2-MUHIM: V4L2 virtual port qabul qilishi uchun YUV420P format!
+            f"format=yuv420p[vout]"
         ),
     ]
 
@@ -132,8 +132,9 @@ def build_ffmpeg_command(
         cmd += [
             "-map", "[vout]",
             "-an",
+            # 3-MUHIM: Virtual port uchun aniq razmer (Invalid Argument xatosi uchun)
             "-video_size", f"{VIRTUAL_WIDTH}x{VIRTUAL_HEIGHT}",
-            "-pix_fmt", "yuyv422",
+            "-pix_fmt", "yuv420p",
             "-f", "v4l2",
             virtual_video_device,
         ]

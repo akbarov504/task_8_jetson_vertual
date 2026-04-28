@@ -66,13 +66,10 @@ def build_ffmpeg_command(
 
         "-thread_queue_size", "4096",
         "-f", "v4l2",
-        "-input_format", "mjpeg",
-    
-        "-framerate", "30",
+        "-input_format", "mjpeg",   # agar ishlamasa -> yuyv422 qilib ko‘r
+        "-framerate", str(FPS),
         "-video_size", f"{WIDTH}x{HEIGHT}",
-        
         "-use_wallclock_as_timestamps", "1",
-        
         "-i", video_device,
 
         "-thread_queue_size", "4096",
@@ -85,25 +82,34 @@ def build_ffmpeg_command(
     ]
 
     cmd += [
-        "-map", "0:v:0",
+        "-filter_complex",
+        (
+            f"[0:v]split=2[v_main][v_virtual];"
+            f"[v_virtual]fps={VIRTUAL_FPS},"
+            f"scale={VIRTUAL_WIDTH}:{VIRTUAL_HEIGHT}:flags=fast_bilinear,"
+            f"format=yuv420p[vout]"
+        ),
+    ]
+
+    # 🎥 FILE OUTPUT
+    cmd += [
+        "-map", "[v_main]",
         "-map", "1:a:0",
 
-        # ========================================================
-        # SUPER-TEZ SOFTWARE ENCODER (CPU qotmaydi, kechikish 0 bo'ladi)
         "-c:v", "libx264",
         "-preset", "ultrafast",
         "-tune", "zerolatency",
-        # ========================================================
-        
+        "-pix_fmt", "yuv420p",
+
         "-b:v", "1800k",
         "-g", str(FPS * SEGMENT_TIME),
         "-keyint_min", str(FPS * SEGMENT_TIME),
         "-maxrate", "1800k",
         "-bufsize", "3600k",
-        
+
         "-r", str(FPS),
         "-vsync", "1",
-        
+
         "-force_key_frames", f"expr:gte(t,n_forced*{SEGMENT_TIME})",
 
         "-c:a", "aac",
@@ -117,21 +123,14 @@ def build_ffmpeg_command(
         "-reset_timestamps", "1",
         "-strftime", "1",
         "-movflags", "+faststart+empty_moov",
+
         timestamp_pattern,
     ]
 
     if virtual_video_device:
         cmd += [
-            "-map", "0:v:0",
+            "-map", "[vout]",
             "-an",
-
-            "-vf", (
-                f"fps={VIRTUAL_FPS},"
-                f"scale={VIRTUAL_WIDTH}:{VIRTUAL_HEIGHT}:flags=fast_bilinear,"
-                f"format=yuv420p"
-            ),
-
-            "-pix_fmt", "yuv420p",
             "-f", "v4l2",
             virtual_video_device,
         ]

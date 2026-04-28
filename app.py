@@ -60,7 +60,9 @@ def build_ffmpeg_command(
         "-hide_banner",
         "-loglevel", "warning",
 
-        "-fflags", "+genpts",
+        "-fflags", "nobuffer",
+        "-flags", "low_delay",
+        
         "-probesize", "2M",
         "-analyzeduration", "2M",
 

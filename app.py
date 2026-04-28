@@ -66,7 +66,7 @@ def build_ffmpeg_command(
 
         "-thread_queue_size", "4096",
         "-f", "v4l2",
-        "-input_format", "mjpeg",   # agar ishlamasa -> yuyv422 qilib ko‘r
+        "-input_format", "yuyv422",
         "-framerate", str(FPS),
         "-video_size", f"{WIDTH}x{HEIGHT}",
         "-use_wallclock_as_timestamps", "1",
@@ -87,11 +87,10 @@ def build_ffmpeg_command(
             f"[0:v]split=2[v_main][v_virtual];"
             f"[v_virtual]fps={VIRTUAL_FPS},"
             f"scale={VIRTUAL_WIDTH}:{VIRTUAL_HEIGHT}:flags=fast_bilinear,"
-            f"format=yuv420p[vout]"
+            f"format=yuyv422[vout]"
         ),
     ]
 
-    # 🎥 FILE OUTPUT
     cmd += [
         "-map", "[v_main]",
         "-map", "1:a:0",
@@ -131,6 +130,7 @@ def build_ffmpeg_command(
         cmd += [
             "-map", "[vout]",
             "-an",
+            "-pix_fmt", "yuyv422",
             "-f", "v4l2",
             virtual_video_device,
         ]

@@ -132,6 +132,7 @@ def build_ffmpeg_command(
         cmd += [
             "-map", "[vout]",
             "-an",
+            "-video_size", f"{VIRTUAL_WIDTH}x{VIRTUAL_HEIGHT}",
             "-pix_fmt", "yuyv422",
             "-f", "v4l2",
             virtual_video_device,

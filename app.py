@@ -214,10 +214,10 @@ def is_file_stable(file_path: str, stable_seconds: int = FILE_STABLE_SECONDS) ->
 
 def reset_virtual_ports():
     print("[INFO] Virtual portlar avtomatik tozalanmoqda (Reset)...")
-    os.system("sudo modprobe -r v4l2loopback")
+    os.system("modprobe -r v4l2loopback")
     time.sleep(1)
 
-    os.system("sudo modprobe v4l2loopback devices=2 video_nr=40,41 card_label=\"OUT_VCAM\",\"IN_VCAM\" exclusive_caps=1")
+    os.system("modprobe v4l2loopback devices=2 video_nr=40,41 card_label=\"OUT_VCAM\",\"IN_VCAM\" exclusive_caps=1")
     time.sleep(1)
     print("[INFO] Virtual portlar tayyor!")
 

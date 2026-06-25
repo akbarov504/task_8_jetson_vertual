@@ -4,7 +4,7 @@ import signal
 import sys
 import time
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from config import LOCAL_PATH, VIDEO_SEGMENT_LEN
 from db import init_db, insert_video, video_exists
@@ -177,12 +177,12 @@ def parse_segment_times_from_filename(file_name: str):
     camera_type, dt_part = parts
 
     try:
-        actual_dt = datetime.strptime(dt_part, "%Y-%m-%d_%H-%M-%S")
+        actual_dt = datetime.strptime(dt_part, "%Y-%m-%d_%H-%M-%S").replace(tzinfo=timezone.utc)
         actual_ts = actual_dt.timestamp()
 
         rounded_ts = round(actual_ts / SEGMENT_TIME) * SEGMENT_TIME
         
-        slot_dt = datetime.fromtimestamp(rounded_ts)
+        slot_dt = datetime.fromtimestamp(rounded_ts, tz=timezone.utc)
 
         segment_key = slot_dt.strftime("%Y-%m-%d_%H-%M-%S")
         start_dt = slot_dt.isoformat()

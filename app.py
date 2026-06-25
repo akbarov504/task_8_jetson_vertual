@@ -35,6 +35,8 @@ FILE_STABLE_SECONDS = 2
 
 VIDEO_ID_NAMESPACE = "TRUCK_VIN"
 
+FFMPEG_ENV = {"TZ": "UTC"}
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 stop_event   = threading.Event()
@@ -330,7 +332,7 @@ def camera_worker(name, video_device, audio_device, virtual_video_device):
         wait_for_sync(SEGMENT_TIME)
 
         print(f"[INFO] {name}: ffmpeg ishga tushirildi!")
-        proc = subprocess.Popen(cmd)
+        proc = subprocess.Popen(cmd, env=FFMPEG_ENV)
 
         with process_lock:
             processes[name] = proc

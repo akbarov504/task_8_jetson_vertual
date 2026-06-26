@@ -179,12 +179,12 @@ def parse_segment_times_from_filename(file_name: str):
     camera_type, dt_part = parts
 
     try:
-        actual_dt = datetime.strptime(dt_part, "%Y-%m-%d_%H-%M-%S").replace(tzinfo=timezone.utc)
+        actual_dt = datetime.strptime(dt_part, "%Y-%m-%d_%H-%M-%S")
         actual_ts = actual_dt.timestamp()
 
         rounded_ts = round(actual_ts / SEGMENT_TIME) * SEGMENT_TIME
         
-        slot_dt = datetime.fromtimestamp(rounded_ts, tz=timezone.utc)
+        slot_dt = datetime.fromtimestamp(rounded_ts)
 
         segment_key = slot_dt.strftime("%Y-%m-%d_%H-%M-%S")
         start_dt = slot_dt.isoformat()
